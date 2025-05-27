@@ -19,7 +19,6 @@ def determine_quadrant(complexity, time):
         return "LONG TERM LOW EFFORT"
 
 def calculate_overall_score(cost, speed, culture, quality, long_term, complexity, time):
-    # Weighted impact
     impact_score = (
         0.1 * cost +
         0.1 * speed +
@@ -41,9 +40,7 @@ if page == "Evaluator":
             'Complexity', 'Time', 'Overall Score', 'Quadrant'
         ])
 
-    input_col, output_col = st.columns([1, 2])
-
-    with input_col:
+    with st.sidebar:
         st.header("⚙️ Use Case Configuration")
 
         usecase_name = st.text_input("Use Case Name")
@@ -130,75 +127,110 @@ if page == "Evaluator":
             except Exception as e:
                 st.error(f"Error processing file: {e}")
 
-    with output_col:
-        st.header("📌 Evaluated Use Cases")
+    st.subheader("📈 Summary Metrics")
+    total_usecases = len(st.session_state.usecases)
+    avg_score = round(st.session_state.usecases['Overall Score'].mean(), 2)
+    avg_complexity = round(st.session_state.usecases['Complexity'].mean(), 2)
+    avg_time = round(st.session_state.usecases['Time'].mean(), 2)
+    top_quadrant = st.session_state.usecases['Quadrant'].value_counts().idxmax() if total_usecases > 0 else "N/A"
 
-        if not st.session_state.usecases.empty:
-            st.dataframe(st.session_state.usecases, use_container_width=True)
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("Total Use Cases", total_usecases)
+    col2.metric("Avg. Score", avg_score)
+    col3.metric("Avg. Complexity", avg_complexity)
+    col4.metric("Avg. Time", avg_time)
+    col5.metric("Most Common Quadrant", top_quadrant)
 
-            st.subheader("Quadrant Matrix (Complexity vs Time)")
-            color_map = {
-                "QUICK WINS": "green",
-                "HIGH EFFORT, QUICK WINS": "blue",
-                "LONG TERM LOW EFFORT": "orange",
-                "STRATEGIC INVESTMENTS": "red"
-            }
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🔍 Filter Use Cases")
 
-            fig = px.scatter(
-                st.session_state.usecases,
-                x="Time",
-                y="Complexity",
-                size="Overall Score",
-                color="Quadrant",
-                text="Use Case",
-                hover_name="Use Case",
-                size_max=60,
-                color_discrete_map=color_map,
-                labels={"Time": "Implementation Time", "Complexity": "Complexity"},
-                template="plotly_white",
-                title="Use Case Quadrant Matrix"
-            )
+    quadrant_filter = st.sidebar.multiselect(
+        "Select Quadrants to Include",
+        options=st.session_state.usecases['Quadrant'].unique().tolist(),
+        default=st.session_state.usecases['Quadrant'].unique().tolist()
+    )
 
-            fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
-            fig.update_layout(xaxis_range=[0, 110], yaxis_range=[0, 110], height=600)
+    min_score, max_score = st.sidebar.slider(
+        "Filter by Overall Score",
+        min_value=0.0,
+        max_value=float(st.session_state.usecases['Overall Score'].max() if not st.session_state.usecases.empty else 1.0),
+        value=(0.0, float(st.session_state.usecases['Overall Score'].max() if not st.session_state.usecases.empty else 1.0))
+    )
 
-            fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(dash="dash", width=2, color="gray"))
-            fig.add_shape(type="line", x0=0, y0=50, x1=100, y1=50, line=dict(dash="dash", width=2, color="gray"))
+    filtered_df = st.session_state.usecases[
+        st.session_state.usecases['Quadrant'].isin(quadrant_filter) &
+        st.session_state.usecases['Overall Score'].between(min_score, max_score)
+    ]
 
-            quadrants = {
-                'HIGH EFFORT, QUICK WINS': {'x':25,'y':75},
-                'STRATEGIC INVESTMENTS': {'x':75,'y':75},
-                'QUICK WINS': {'x':25,'y':25},
-                'LONG TERM LOW EFFORT': {'x':75,'y':25}
-            }
-            for q, pos in quadrants.items():
-                fig.add_annotation(x=pos['x'], y=pos['y'], text=q, showarrow=False, font=dict(size=16, color='gray'))
+    st.header("📌 Evaluated Use Cases")
 
-            st.plotly_chart(fig, use_container_width=True)
+    if not filtered_df.empty:
+        st.dataframe(filtered_df, use_container_width=True)
 
-            st.subheader("🌟 Top Use Cases by Score (Faceted by Quadrant)")
-            top_cases = (
-                st.session_state.usecases
-                .sort_values(by="Overall Score", ascending=False)
-                .groupby("Quadrant")
-                .head(5)
-            )
+        st.subheader("Quadrant Matrix (Complexity vs Time)")
+        color_map = {
+            "QUICK WINS": "green",
+            "HIGH EFFORT, QUICK WINS": "blue",
+            "LONG TERM LOW EFFORT": "orange",
+            "STRATEGIC INVESTMENTS": "red"
+        }
 
-            facet_fig = px.bar(
-                top_cases,
-                x="Use Case",
-                y="Overall Score",
-                color="Quadrant",
-                facet_col="Quadrant",
-                template="plotly_white",
-                title="Top Use Cases by Quadrant",
-                height=500
-            )
-            facet_fig.update_layout(showlegend=False)
-            facet_fig.for_each_annotation(lambda a: a.update(text=a.text.split('=')[1]))
-            st.plotly_chart(facet_fig, use_container_width=True)
-        else:
-            st.info("Add use cases on the left to visualize evaluation.")
+        fig = px.scatter(
+            filtered_df,
+            x="Time",
+            y="Complexity",
+            size="Overall Score",
+            color="Quadrant",
+            text="Use Case",
+            hover_name="Use Case",
+            size_max=60,
+            color_discrete_map=color_map,
+            labels={"Time": "Implementation Time", "Complexity": "Complexity"},
+            template="plotly_white",
+            title="Use Case Quadrant Matrix"
+        )
+
+        fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
+        fig.update_layout(xaxis_range=[0, 110], yaxis_range=[0, 110], height=600)
+
+        fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(dash="dash", width=2, color="gray"))
+        fig.add_shape(type="line", x0=0, y0=50, x1=100, y1=50, line=dict(dash="dash", width=2, color="gray"))
+
+        quadrants = {
+            'HIGH EFFORT, QUICK WINS': {'x':25,'y':75},
+            'STRATEGIC INVESTMENTS': {'x':75,'y':75},
+            'QUICK WINS': {'x':25,'y':25},
+            'LONG TERM LOW EFFORT': {'x':75,'y':25}
+        }
+        for q, pos in quadrants.items():
+            fig.add_annotation(x=pos['x'], y=pos['y'], text=q, showarrow=False, font=dict(size=16, color='gray'))
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("🌟 Top Use Cases by Score (Faceted by Quadrant)")
+        top_cases = (
+            filtered_df
+            .sort_values(by="Overall Score", ascending=False)
+            .groupby("Quadrant", group_keys=False)
+            .head(5)
+        )
+
+        facet_fig = px.bar(
+            top_cases,
+            x="Use Case",
+            y="Overall Score",
+            color="Quadrant",
+            facet_col="Quadrant",
+            template="plotly_white",
+            title="Top Use Cases by Quadrant",
+            height=500,
+            category_orders={"Use Case": top_cases.sort_values("Overall Score", ascending=False)["Use Case"].tolist()}
+        )
+        facet_fig.update_layout(showlegend=False)
+        facet_fig.for_each_annotation(lambda a: a.update(text=a.text.split('=')[1]))
+        st.plotly_chart(facet_fig, use_container_width=True)
+    else:
+        st.info("No use cases match the selected filters.")
 
 # Methodology Page
 elif page == "Methodology":
