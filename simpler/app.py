@@ -23,15 +23,15 @@ with input_col:
     usecase_name = st.text_input("Use Case Name")
 
     st.subheader("Criteria (1=Poor, 10=Excellent)")
-    cost = st.slider("Cost (Low Expense)", 1, 10, 5)
-    speed = st.slider("Speed (Rapid Implementation)", 1, 10, 5)
-    culture = st.slider("Culture (Easy Adoption)", 1, 10, 5)
-    quality = st.slider("Quality (Innovation & Impact)", 1, 10, 5)
-    long_term = st.slider("Long-term Value (Strategic Impact)", 1, 10, 5)
+    cost = st.slider("Cost (Low Expense)", 1, 100, 5)
+    speed = st.slider("Speed (Rapid Implementation)", 1, 100, 5)
+    culture = st.slider("Culture (Easy Adoption)", 1, 100, 5)
+    quality = st.slider("Quality (Innovation & Impact)", 1, 100, 5)
+    long_term = st.slider("Long-term Value (Strategic Impact)", 1, 100, 5)
 
     st.subheader("Complexity & Time (Higher = More difficult/longer)")
-    complexity = st.slider("Complexity (Technical & Operational)", 1, 10, 5)
-    time = st.slider("Time (Implementation Effort)", 1, 10, 5)
+    complexity = st.slider("Complexity (Technical & Operational)", 1, 100, 5)
+    time = st.slider("Time (Implementation Effort)", 1, 100, 5)
 
     if st.button("➕ Add Use Case"):
         if not usecase_name.strip():
@@ -40,9 +40,9 @@ with input_col:
             overall_score = round((cost + speed + culture + quality + long_term) / (complexity * time), 2)
 
             # Quadrant determination
-            quadrant = ("HIGH EFFORT, QUICK WINS" if complexity >= 5 and time < 5 else
-                        "STRATEGIC INVESTMENTS" if complexity >= 5 and time >= 5 else
-                        "QUICK WINS" if complexity < 5 and time < 5 else
+            quadrant = ("HIGH EFFORT, QUICK WINS" if complexity >= 50 and time < 50 else
+                        "STRATEGIC INVESTMENTS" if complexity >= 50 and time >= 50 else
+                        "QUICK WINS" if complexity < 50 and time < 50 else
                         "LONG TERM LOW EFFORT")
 
             new_usecase = pd.DataFrame([{
@@ -91,9 +91,9 @@ with input_col:
                         )
 
                         quadrant = (
-                            "HIGH EFFORT, QUICK WINS" if row['Complexity'] >= 5 and row['Time'] < 5 else
-                            "STRATEGIC INVESTMENTS" if row['Complexity'] >= 5 and row['Time'] >= 5 else
-                            "QUICK WINS" if row['Complexity'] < 5 and row['Time'] < 5 else
+                            "HIGH EFFORT, QUICK WINS" if row['Complexity'] >= 50 and row['Time'] < 50 else
+                            "STRATEGIC INVESTMENTS" if row['Complexity'] >= 50 and row['Time'] >= 50 else
+                            "QUICK WINS" if row['Complexity'] < 50 and row['Time'] < 50 else
                             "LONG TERM LOW EFFORT"
                         )
 
@@ -143,18 +143,18 @@ with output_col:
         )
 
         fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
-        fig.update_layout(xaxis_range=[0, 11], yaxis_range=[0, 11], height=600)
+        fig.update_layout(xaxis_range=[0, 110], yaxis_range=[0, 110], height=600)
 
         # Quadrant dividers
-        fig.add_shape(type="line", x0=5, y0=0, x1=5, y1=10, line=dict(dash="dash", width=2, color="gray"))
-        fig.add_shape(type="line", x0=0, y0=5, x1=10, y1=5, line=dict(dash="dash", width=2, color="gray"))
+        fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(dash="dash", width=2, color="gray"))
+        fig.add_shape(type="line", x0=0, y0=50, x1=100, y1=50, line=dict(dash="dash", width=2, color="gray"))
 
         # Quadrant labels
         quadrants = {
-            'HIGH EFFORT, QUICK WINS': {'x':2.5,'y':7.5},
-            'STRATEGIC INVESTMENTS': {'x':7.5,'y':7.5},
-            'QUICK WINS': {'x':2.5,'y':2.5},
-            'LONG TERM LOW EFFORT': {'x':7.5,'y':2.5}
+            'HIGH EFFORT, QUICK WINS': {'x':25,'y':75},
+            'STRATEGIC INVESTMENTS': {'x':75,'y':75},
+            'QUICK WINS': {'x':25,'y':25},
+            'LONG TERM LOW EFFORT': {'x':75,'y':25}
         }
         for q, pos in quadrants.items():
             fig.add_annotation(x=pos['x'], y=pos['y'], text=q, showarrow=False, font=dict(size=16, color='gray'))
