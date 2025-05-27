@@ -162,12 +162,12 @@ if page == "Evaluator":
         st.session_state.usecases['Overall Score'].between(min_score, max_score)
     ]
 
-    st.header("📌 Evaluated Use Cases")
+    st.header("Evaluated Use Cases")
 
     if not filtered_df.empty:
         st.dataframe(filtered_df, use_container_width=True)
 
-        st.subheader("Quadrant Matrix (Complexity vs Time)")
+        st.subheader("Strategic Positioning of Use Cases")
         color_map = {
             "QUICK WINS": "green",
             "HIGH EFFORT, QUICK WINS": "blue",
@@ -207,7 +207,7 @@ if page == "Evaluator":
 
         st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("🌟 Top Use Cases by Score (Faceted by Quadrant)")
+        st.subheader("Top Use Cases by Score (Faceted by Quadrant)")
         top_cases = (
             filtered_df
             .sort_values(by="Overall Score", ascending=False)
@@ -278,7 +278,7 @@ Overall Score = Impact Score × (1 + Modifier)
 
 # Presentation Mode Page
 elif page == "Presentation Mode":
-    st.title("📽️ Executive Summary View")
+    st.title("Executive Summary View")
     st.markdown("""
 This page presents a simplified view of the most important insights for an executive audience:
 - Focus is on clarity, prioritization, and strategic alignment
