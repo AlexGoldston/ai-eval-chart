@@ -6,6 +6,7 @@ from views.p_summary import render as summary_render
 
 st.set_page_config(page_title="AI Use Case Evaluator", layout="wide")
 
+
 # Views mapping
 VIEWS = {
     "Methodology": methodology_render,
@@ -20,9 +21,6 @@ current_page = params.get("page", "Evaluator")
 st.session_state["current_page"] = current_page
 
 # Navigation bar (using native buttons)
-st.divider()
-st.columns(1)[0].markdown("### Navigation")
-
 nav_cols = st.columns(len(VIEWS))
 for i, (name, view_fn) in enumerate(VIEWS.items()):
     if nav_cols[i].button(name, use_container_width=True):
