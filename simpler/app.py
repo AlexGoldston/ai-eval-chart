@@ -167,7 +167,7 @@ if page == "Evaluator":
     if not filtered_df.empty:
         st.dataframe(filtered_df, use_container_width=True)
 
-        st.subheader("Strategic Positioning of Use Cases")
+        # st.subheader("Strategic Positioning of Use Cases")
         color_map = {
             "QUICK WINS": "green",
             "HIGH EFFORT, QUICK WINS": "blue",
@@ -187,7 +187,7 @@ if page == "Evaluator":
             color_discrete_map=color_map,
             labels={"Time": "Implementation Time", "Complexity": "Complexity"},
             template="plotly_white",
-            title="Use Case Quadrant Matrix"
+            title="Strategic Positioning of Use Cases"
         )
 
         fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
@@ -286,18 +286,17 @@ This page presents a simplified view of the most important insights for an execu
 """)
 
     if 'usecases' in st.session_state and not st.session_state.usecases.empty:
-        st.subheader("🧭 Strategic Quadrant Overview")
+        st.subheader("Strategic Quadrant Overview")
         quadrant_counts = st.session_state.usecases['Quadrant'].value_counts().reset_index()
         quadrant_counts.columns = ['Quadrant', 'Count']
         pie_chart = px.pie(quadrant_counts, names='Quadrant', values='Count', title='Use Case Distribution by Quadrant')
         st.plotly_chart(pie_chart, use_container_width=True)
 
-        st.subheader("🏆 Top Strategic Opportunities")
+        st.subheader("Top Strategic Opportunities")
         top_strategic = st.session_state.usecases[st.session_state.usecases['Quadrant'] == 'STRATEGIC INVESTMENTS']
         top_5 = top_strategic.sort_values(by='Overall Score', ascending=False).head(5)
         st.table(top_5[['Use Case', 'Overall Score', 'Complexity', 'Time']])
 
-        st.subheader("🔍 Visual Summary of Use Cases")
         fig = px.scatter(
             st.session_state.usecases,
             x="Time",
