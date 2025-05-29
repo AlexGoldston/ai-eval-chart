@@ -5,7 +5,7 @@ from utils.score_utils import determine_quadrant, calculate_overall_score
 
 def render():
     # Evaluator Page
-    st.title("📊 AI Use Case Evaluator")
+    # st.title("AI Use Case Evaluator")
 
     if 'usecases' not in st.session_state:
         st.session_state.usecases = pd.DataFrame(columns=[
@@ -14,7 +14,7 @@ def render():
         ])
 
     with st.sidebar:
-        st.header("⚙️ Use Case Configuration")
+        st.header("Use Case Configuration")
 
         usecase_name = st.text_input("Use Case Name")
 
@@ -29,7 +29,7 @@ def render():
         complexity = st.slider("Complexity (Technical & Operational)", 1, 100, 5)
         time = st.slider("Time (Implementation Effort)", 1, 100, 5)
 
-        if st.button("➕ Add Use Case"):
+        if st.button("Add Use Case"):
             if not usecase_name.strip():
                 st.warning("Please enter a valid use case name.")
             else:
@@ -53,13 +53,13 @@ def render():
                 st.success(f"Added: {usecase_name}")
 
         if not st.session_state.usecases.empty:
-            st.subheader("🗑️ Remove Use Case")
+            st.subheader("Remove Use Case")
             remove_case = st.selectbox("Select Use Case to Remove", st.session_state.usecases["Use Case"])
-            if st.button("❌ Remove Selected"):
+            if st.button("Remove Selected"):
                 st.session_state.usecases = st.session_state.usecases[st.session_state.usecases["Use Case"] != remove_case]
                 st.warning(f"Removed: {remove_case}")
 
-        st.subheader("📥 Import Use Cases from CSV")
+        st.subheader("Import Use Cases from CSV")
         uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
         if uploaded_file is not None:
@@ -100,7 +100,7 @@ def render():
             except Exception as e:
                 st.error(f"Error processing file: {e}")
 
-    st.subheader("📈 Summary Metrics")
+    st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Summary Metrics</h3>', unsafe_allow_html=True)
     total_usecases = len(st.session_state.usecases)
     avg_score = round(st.session_state.usecases['Overall Score'].mean(), 2)
     avg_complexity = round(st.session_state.usecases['Complexity'].mean(), 2)
@@ -115,7 +115,7 @@ def render():
     col5.metric("Most Common Quadrant", top_quadrant)
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader("🔍 Filter Use Cases")
+    st.sidebar.subheader("Filter")
 
     quadrant_filter = st.sidebar.multiselect(
         "Select Quadrants to Include",
@@ -135,17 +135,18 @@ def render():
         st.session_state.usecases['Overall Score'].between(min_score, max_score)
     ]
 
-    st.header("Evaluated Use Cases")
+    st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Evaluated Use Cases</h3>', unsafe_allow_html=True)
 
     if not filtered_df.empty:
         st.dataframe(filtered_df, use_container_width=True)
 
         # st.subheader("Strategic Positioning of Use Cases")
+        st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Top Use Cases by Score & Strategic Positioning</h3>', unsafe_allow_html=True)
         color_map = {
             "QUICK WINS": "green",
             "HIGH EFFORT, QUICK WINS": "blue",
             "LONG TERM LOW EFFORT": "orange",
-            "STRATEGIC INVESTMENTS": "red"
+            "STRATEGIC INVESTMENTS": "#1C19B5"
         }
 
         fig = px.scatter(
@@ -160,7 +161,6 @@ def render():
             color_discrete_map=color_map,
             labels={"Time": "Implementation Time", "Complexity": "Complexity"},
             template="plotly_white",
-            title="Strategic Positioning of Use Cases"
         )
 
         fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
@@ -180,7 +180,7 @@ def render():
 
         st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("Top Use Cases by Score (Faceted by Quadrant)")
+        st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Top Use Cases by Score & Strategic Positioning</h3>', unsafe_allow_html=True)
         top_cases = (
             filtered_df
             .sort_values(by="Overall Score", ascending=False)
@@ -195,7 +195,6 @@ def render():
             color="Quadrant",
             facet_col="Quadrant",
             template="plotly_white",
-            title="Top Use Cases by Quadrant",
             height=500,
             category_orders={"Use Case": top_cases.sort_values("Overall Score", ascending=False)["Use Case"].tolist()}
         )
