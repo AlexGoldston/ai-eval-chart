@@ -1,0 +1,12 @@
+﻿,Use Case,Cost,Speed,Culture,Quality,Long-term Value,Complexity,Time,Overall Score,Quadrant
+0,Knowledge Ontology & Semantic Search,50,30,90,90,95,75,49,139.42,"HIGH EFFORT, QUICK WINS"
+1,Process & Policy Assistants,95,85,75,60,50,10,10,121.88,QUICK WINS
+2,Pop Design Standards Assistant,90,70,70,65,55,15,20,121.44,QUICK WINS
+3,Sporting Code & Regulation Assistants,90,95,95,75,60,5,10,143.26,QUICK WINS
+4,BIM Copilot,70,65,90,80,50,50,45,111.92,"HIGH EFFORT, QUICK WINS"
+5,Client Brief Assistant,90,75,80,80,65,25,25,136.88,QUICK WINS
+6,RFI Analysis Assistant,70,65,70,80,70,40,30,130.49,QUICK WINS
+7,Model QA/QC Agent,40,40,75,90,80,60,55,125.87,STRATEGIC INVESTMENTS
+8,Model Feature Extraction & Comparator,30,50,65,85,70,30,55,118.87,LONG TERM LOW EFFORT
+9,Project Benchmarking,45,60,95,75,85,40,65,134.66,LONG TERM LOW EFFORT
+10,Proposal & RFP Agent System,20,30,95,90,90,80,60,127.88,STRATEGIC INVESTMENTS

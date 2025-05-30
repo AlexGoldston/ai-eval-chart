@@ -37,11 +37,7 @@ def render_svg_logo(width=150):
         st.image(svg_uri, width=width)
 
 render_svg_logo()
-st.markdown(
-    """
-
-"""
-)
+st.markdown("""""")
 
 # Views mapping
 VIEWS = {

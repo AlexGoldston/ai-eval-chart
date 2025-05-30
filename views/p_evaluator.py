@@ -5,8 +5,7 @@ from utils.score_utils import determine_quadrant, calculate_overall_score
 
 def render():
     # Evaluator Page
-    # st.title("AI Use Case Evaluator")
-
+    st.divider()
     if 'usecases' not in st.session_state:
         st.session_state.usecases = pd.DataFrame(columns=[
             'Use Case', 'Cost', 'Speed', 'Culture', 'Quality', 'Long-term Value',
@@ -140,66 +139,103 @@ def render():
     if not filtered_df.empty:
         st.dataframe(filtered_df, use_container_width=True)
 
-        # st.subheader("Strategic Positioning of Use Cases")
-        st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Top Use Cases by Score & Strategic Positioning</h3>', unsafe_allow_html=True)
-        color_map = {
-            "QUICK WINS": "green",
-            "HIGH EFFORT, QUICK WINS": "blue",
-            "LONG TERM LOW EFFORT": "orange",
-            "STRATEGIC INVESTMENTS": "#1C19B5"
-        }
+    # Strategic Positioning Scatter Plot
+    st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Top Use Cases by Score & Strategic Positioning</h3>', unsafe_allow_html=True)
 
-        fig = px.scatter(
-            filtered_df,
-            x="Time",
-            y="Complexity",
-            size=filtered_df["Overall Score"] ** 2,
-            color="Quadrant",
-            text="Use Case",
-            hover_name="Use Case",
-            size_max=50,
-            color_discrete_map=color_map,
-            labels={"Time": "Implementation Time", "Complexity": "Complexity"},
-            template="plotly_white",
-        )
+    color_map = {
+        "QUICK WINS": "#8A8DA4",
+        "HIGH EFFORT, QUICK WINS": "#91A598",
+        "LONG TERM LOW EFFORT": "#A49393",
+        "STRATEGIC INVESTMENTS": "#1C19B5",
+    }
 
-        fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
-        fig.update_layout(xaxis_range=[0, 110], yaxis_range=[0, 110], height=600)
+    fig = px.scatter(
+        filtered_df,
+        x="Time",
+        y="Complexity",
+        size=filtered_df["Overall Score"] ** 3,
+        color="Quadrant",
+        text="Use Case",
+        hover_name="Use Case",
+        size_max=50,
+        color_discrete_map=color_map,
+        labels={"Time": "Implementation Time", "Complexity": "Complexity"},
+        template="plotly_white",
+    )
 
-        fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(dash="dash", width=2, color="gray"))
-        fig.add_shape(type="line", x0=0, y0=50, x1=100, y1=50, line=dict(dash="dash", width=2, color="gray"))
+    fig.update_traces(textposition='top center', marker=dict(opacity=0.7))
+    fig.update_layout(
+        xaxis_range=[0, 110], 
+        yaxis_range=[0, 110], 
+        height=600,
+        legend=dict(
+            orientation='h',
+            yanchor='bottom',
+            y=1.05,
+            xanchor='center',
+            x=0.5
+        ),
+        legend_title_text=None
+    )
 
-        quadrants = {
-            'HIGH EFFORT, QUICK WINS': {'x':25,'y':75},
-            'STRATEGIC INVESTMENTS': {'x':75,'y':75},
-            'QUICK WINS': {'x':25,'y':25},
-            'LONG TERM LOW EFFORT': {'x':75,'y':25}
-        }
-        for q, pos in quadrants.items():
-            fig.add_annotation(x=pos['x'], y=pos['y'], text=q, showarrow=False, font=dict(size=16, color='gray'))
+    fig.add_shape(type="line", x0=50, y0=0, x1=50, y1=100, line=dict(dash="dash", width=2, color="gray"))
+    fig.add_shape(type="line", x0=0, y0=50, x1=100, y1=50, line=dict(dash="dash", width=2, color="gray"))
 
-        st.plotly_chart(fig, use_container_width=True)
+    quadrants = {
+        'HIGH EFFORT, QUICK WINS': {'x':25,'y':75},
+        'STRATEGIC INVESTMENTS': {'x':75,'y':75},
+        'QUICK WINS': {'x':25,'y':25},
+        'LONG TERM LOW EFFORT': {'x':75,'y':25}
+    }
+    for q, pos in quadrants.items():
+        fig.add_annotation(x=pos['x'], y=pos['y'], text=q, showarrow=False, font=dict(size=16, color='gray'))
 
-        st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Top Use Cases by Score & Strategic Positioning</h3>', unsafe_allow_html=True)
-        top_cases = (
-            filtered_df
-            .sort_values(by="Overall Score", ascending=False)
-            .groupby("Quadrant", group_keys=False)
-            .head(5)
-        )
+    st.plotly_chart(fig, use_container_width=True)
 
-        facet_fig = px.bar(
-            top_cases,
-            x="Use Case",
-            y="Overall Score",
-            color="Quadrant",
-            facet_col="Quadrant",
-            template="plotly_white",
-            height=500,
-            category_orders={"Use Case": top_cases.sort_values("Overall Score", ascending=False)["Use Case"].tolist()}
-        )
-        facet_fig.update_layout(showlegend=False)
-        facet_fig.for_each_annotation(lambda a: a.update(text=a.text.split('=')[1]))
-        st.plotly_chart(facet_fig, use_container_width=True)
-    else:
-        st.info("No use cases match the selected filters.")
+    st.markdown('<h3 style="color:#1C19B5; font-weight:600;">Top Use Cases by Score (Per Quadrant)</h3>', unsafe_allow_html=True)
+
+    # Clean and prep
+    filtered_df["Use Case"] = filtered_df["Use Case"].str.strip()
+
+    # Get top 5 per quadrant
+    top_cases = (
+        filtered_df
+        .sort_values(by="Overall Score", ascending=False)
+        .groupby("Quadrant", group_keys=False)
+        .head(5)
+        .copy()
+    )
+
+    # Get the unique quadrants in consistent order
+    quadrants_order = ["QUICK WINS", "HIGH EFFORT, QUICK WINS", "STRATEGIC INVESTMENTS", "LONG TERM LOW EFFORT"]
+
+    # Color map (reuse your existing color scheme if needed)
+    color_map = {
+        "QUICK WINS": "#8A8DA4",
+        "HIGH EFFORT, QUICK WINS": "#91A598",
+        "LONG TERM LOW EFFORT": "#A49393",
+        "STRATEGIC INVESTMENTS": "#1C19B5",
+    }
+
+    # Layout: 4 columns
+    cols = st.columns(4)
+
+    # Loop through each quadrant and render its chart in a column
+    for i, quadrant in enumerate(quadrants_order):
+        quadrant_df = top_cases[top_cases["Quadrant"] == quadrant]
+        if not quadrant_df.empty:
+            fig = px.bar(
+                quadrant_df,
+                x="Use Case",
+                y="Overall Score",
+                title=quadrant,
+                color_discrete_sequence=[color_map.get(quadrant, "#1C1C1C")],
+                labels={"Overall Score": "Score", "Use Case": "Use Case"},
+                height=400,
+            )
+            fig.update_layout(
+                showlegend=False,
+                margin=dict(l=10, r=10, t=40, b=10),
+                xaxis_tickangle=-45,
+            )
+            cols[i].plotly_chart(fig, use_container_width=True)
